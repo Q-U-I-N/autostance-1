@@ -30,5 +30,5 @@ module.exports = function autoStance(dispatch) {
 	dispatch.hook('C_PLAYER_LOCATION', 1, autostance.dispatch.bind(autostance,dispatch,command));
 
 	/** In-game configuration event handler**/
-	command.add('autostance',autostance.toggle.bind(autostance,command)
+	command.add('autostance',autostance.toggle.bind(autostance,command));
 }
