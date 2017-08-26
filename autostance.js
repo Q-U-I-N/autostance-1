@@ -11,9 +11,9 @@ module.exports = {
   auto:true,
   playerName:null,
 
-  unregister: function(messageBroker) {
+  unregister: function() {
     if ( stances.isExists(this.activeClass) ) {
-      messageBroker.message("[autostance-info] Removed auto "+ stances[this.activeClass].desc);
+      console.log("[autostance-info] Removed auto %s",stances[this.activeClass].desc);
       this.stance=null;
       this.stanceStamina=null;
       this.playerStamina=null;
@@ -24,16 +24,16 @@ module.exports = {
     }
   },
 
-  register: function(messageBroker,loginEvent) {
+  register: function(loginEvent) {
     this.activeClass = (loginEvent.model - 10101) % 100;
     this.cid=loginEvent.cid;
     this.playerName=loginEvent.name;
     if ( stances.isExists(this.activeClass) ) {
       this.hasAlternativeStance = stances[this.activeClass].hasAlternativeStance;
       this.stanceStamina = stances[this.activeClass].stamina;
-      this.stance = this.hasAlternativeStance ? stances[this.activeClass].id[stances[this.activeClass].defaultStance] + 0x4000000 : stances[this.activeClass].id[0] + 0x4000000;
+      this.stance = this.hasAlternativeStance ? stances[this.activeClass].id[stances[this.activeClass].defaultStance-1] + 0x4000000 : stances[this.activeClass].id[0] + 0x4000000;
       this.abnormalities = stances[this.activeClass].abnormalities[0];
-      messageBroker.message("[autostance-info] Configured auto " + stances[this.activeClass].desc + '(' + stances[this.activeClass].job + ')');
+      console.log("[autostance-info] Configured auto " + stances[this.activeClass].desc + '(' + stances[this.activeClass].job + ')');
     }
   },
 
@@ -80,13 +80,18 @@ module.exports = {
     }
   },
 
-  playerStatus: function(spawnEvent,statUpdatedEvent,staminaUpdatedEvent) {
-    if(spawnEvent != null && spawnEvent.alive != null || spawnEvent != undefined && spawnEvent.alive != undefined ) this.isPlayerAlive=spawnEvent.alive === 1 || spawnEvent.target.equals(this.cid) && spawnEvent.alive === true;
-    if(statUpdatedEvent != null && statUpdatedEvent.curRe != null || statUpdatedEvent != undefined && statUpdatedEvent.curRe != undefined ) this.playerStamina=statUpdatedEvent.curRe;
-    if(staminaUpdatedEvent != null && staminaUpdatedEvent.current != null || staminaUpdatedEvent != undefined && staminaUpdatedEvent.current != undefined ) this.playerStamina=staminaUpdatedEvent.current;
+  playerStatus: function(eventType,playerStatEvent) {
+	if ( stances.isExists(this.activeClass) ) {
+		if ( playerStatEvent != null || playerStatEvent != undefined ) {
+			if( eventType == 'spawn' || eventType == 'alive') this.isPlayerAlive=playerStatEvent.alive === 1 || playerStatEvent.target.equals(this.cid) && playerStatEvent.alive === true;
+			if( eventType == 'statUpdate' && stances[this.activeClass].stamina != null ) this.playerStamina=playerStatEvent.curRe;
+			if( eventType == 'staminaChanged' && stances[this.activeClass].stamina != null ) this.playerStamina=playerStatEvent.current;
+		}
+	}  
+	
   },
 
-  /** in-game configuration by triggering "Dance" emote**/
+  /** in-game configuration by typing "/proxy autostance" in the chat tab**/
   toggle: function(messageBroker) {
     this.auto=!this.auto;
     messageBroker.message("Autostance is ".concat(this.auto===true ? "on" : "off"))

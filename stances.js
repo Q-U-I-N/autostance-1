@@ -9,7 +9,7 @@ module.exports = {
 		job: 'Warrior',
 		desc: ['Assault Stance IV','Defensive Stance IV'],
 		hasAlternativeStance:true,
-		defaultStance:0,
+		defaultStance:1,
 		stamina:1000, // RE
 		id:[80400,90400],
 		abnormalities:[[100103,100150],[100203,100297,100298,100299,100296]]
